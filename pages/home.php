@@ -76,7 +76,7 @@
                         <i class="fa fa-cutlery"></i>
 
                     </p>
-                    <a href="book.php" class="btn btn-dark w-100">Choose Room</a>
+                    <a href="pages/book.php" class="btn btn-dark w-100">Choose Room</a>
                 </div>
             </div>
         </div>
@@ -94,7 +94,7 @@
                         <i class="fa fa-cutlery"></i>
 
                     </p>
-                    <a href="book.php" class="btn btn-dark w-100">Choose Room</a>
+                    <a href="pages/book.php" class="btn btn-dark w-100">Choose Room</a>
                 </div>
             </div>
         </div>
@@ -112,7 +112,7 @@
                         <i class="fa fa-cutlery"></i>
 
                     </p>
-                    <a href="book.php" class="btn btn-dark w-100">Choose Room</a>
+                    <a href="pages/book.php" class="btn btn-dark w-100">Choose Room</a>
                 </div>
             </div>
         </div>
