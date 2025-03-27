@@ -144,7 +144,7 @@ CREATE TABLE `users` (
   `id` int(4) NOT NULL,
   `name` varchar(20) COLLATE utf8mb4_vietnamese_ci NOT NULL,
   `username` varchar(20) COLLATE utf8mb4_vietnamese_ci NOT NULL,
-  `password` varchar(10) COLLATE utf8mb4_vietnamese_ci NOT NULL,
+  `password` varchar(255) COLLATE utf8mb4_vietnamese_ci NOT NULL,
   `type` int(2) NOT NULL DEFAULT 2 COMMENT '1 = admin, 2 = staff'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_vietnamese_ci;
 
