@@ -1,10 +1,9 @@
 <?php
-// session_start();
 include 'header.php';
 if (isset($_SESSION['user_id']) && isset($_SESSION['user_name'])):
 ?>
     <nav class="d-flex flex-column flex-shrink-0 p-3 bg-dark text-white vh-100 position-fixed" style="width: 200px;">
-        <h5 class="text-center mb-3"><i class="fa fa-building"></i> HBOOK</h5>
+        <h5 class="text-center mb-3"><a href="../index.php"><i class="fa fa-building"></i> HBOOK</h5></a>
 
         <ul class="nav nav-pills flex-column mb-auto">
             <li class="nav-item">
@@ -27,17 +26,17 @@ if (isset($_SESSION['user_id']) && isset($_SESSION['user_name'])):
                     <i class="fa fa-sign-out-alt me-2"></i> Check Out
                 </a>
             </li>
-            <li>
+            <!-- <li>
                 <a href="index.php?page=customers" class="nav-link text-white">
                     <i class="fa fa-users me-2"></i> Customers
                 </a>
-            </li>
+            </li> -->
             <li>
                 <a href="index.php?page=rooms" class="nav-link text-white">
                     <i class="fa fa-bed me-2"></i> Rooms
                 </a>
             </li>
-            <!-- <?php if ($_SESSION['login_type'] == 1): ?>
+            <!-- <?php if ($_SESSION['user_type'] == "admin"): ?>
                 <li>
                     <a href="index.php?page=users" class="nav-link text-white">
                         <i class="fa fa-user me-2"></i> Users
@@ -47,9 +46,9 @@ if (isset($_SESSION['user_id']) && isset($_SESSION['user_name'])):
         </ul>
 
         <div class="mt-auto">
-            <a href="logout.php" class="nav-link text-white d-flex align-items-center">
+            <!-- <a href="../pages/logout.php" class="nav-link text-white d-flex align-items-center"> -->
                 <i class="fa fa-power-off me-2"></i> <?php echo $_SESSION['user_name'] ?>
-            </a>
+            <!-- </a> -->
         </div>
     </nav>
 

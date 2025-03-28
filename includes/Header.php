@@ -1,4 +1,4 @@
-<?php 
+<?php
 require __DIR__ . "/../vendor/autoload.php";
 
 use Firebase\JWT\JWT;
@@ -41,8 +41,9 @@ if (isset($_COOKIE["token"])) {
                             </li>
                         <?php endif; ?>
                         <li class="nav-item">
-                            <span class="nav-link text-success fw-bold">👤 <?= htmlspecialchars($username) ?></span>
+                            <a class="nav-link text-success fw-bold" href="../pages/profile.php">👤 <?= htmlspecialchars($username) ?></a>
                         </li>
+
                         <li class="nav-item">
                             <a class="nav-link text-danger" href="../pages/logout.php">Logout</a>
                         </li>

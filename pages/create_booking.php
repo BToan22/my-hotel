@@ -1,74 +1,53 @@
 <?php
+require __DIR__ . "/../DB/db_connect.php";
+session_start();
+header("Content-Type: application/json");
 
-include "../DB/db_connect.php";
-
-
-$name         = filter_input(INPUT_POST, 'name', FILTER_SANITIZE_STRING);
-$mail         = filter_input(INPUT_POST, 'mail', FILTER_VALIDATE_EMAIL);
-$phone        = filter_input(INPUT_POST, 'phone', FILTER_SANITIZE_STRING);
-$room_type    = filter_input(INPUT_POST, 'room_type', FILTER_SANITIZE_STRING);
-$adult        = filter_input(INPUT_POST, 'adult', FILTER_VALIDATE_INT);
-$children     = filter_input(INPUT_POST, 'children', FILTER_VALIDATE_INT);
-$datein       = filter_input(INPUT_POST, 'datein', FILTER_SANITIZE_STRING);
-$dateout      = filter_input(INPUT_POST, 'dateout', FILTER_SANITIZE_STRING);
-$days_of_stay = filter_input(INPUT_POST, 'days_of_stay', FILTER_VALIDATE_INT);
-$message      = filter_input(INPUT_POST, 'message', FILTER_SANITIZE_STRING);
-$status       = 0;
-
-
-$room_types = [
-    "Single Room" => 1,
-    "Double Room" => 2,
-    "Family Room" => 3
-];
-
-$room_id = $room_types[$room_type] ?? 3;
-
-
-function generateUniqueNumber($pdo, $table, $column, $max)
-{
-    do {
-        $number = rand(100000, $max);
-        $stmt = $pdo->prepare("SELECT COUNT(*) FROM $table WHERE $column = ?");
-        $stmt->execute([$number]);
-        $exists = $stmt->fetchColumn();
-    } while ($exists > 0);
-    return $number;
-}
-
-
-$ref_no  = generateUniqueNumber($pdo, 'booking', 'ref_no', 999999999);
-$cus_id  = generateUniqueNumber($pdo, 'customers', 'customer_id', 99999999);
-
-try {
-
-    $pdo->beginTransaction();
-
-
-    $sql = "INSERT INTO booking (name, ref_no, mail, phone, room_type, room_id, adult, children, datein, dateout, days_of_stay, status, message) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute([$name, $ref_no, $mail, $phone, $room_type, $room_id, $adult, $children, $datein, $dateout, $days_of_stay, $status, $message]);
-
-
-    $stmt = $pdo->prepare("SELECT COUNT(*) FROM customers WHERE phone = ?");
-    $stmt->execute([$phone]);
-    $exists = $stmt->fetchColumn();
-
-
-    if ($exists == 0) {
-        $sql = "INSERT INTO customers (name, customer_id, mail, phone) VALUES (?, ?, ?, ?)";
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute([$name, $cus_id, $mail, $phone]);
-    }
-
-
-    $pdo->commit();
-
-
-    header("Location: book.php");
+if ($_SERVER["REQUEST_METHOD"] !== "POST") {
+    echo json_encode(["success" => false, "message" => "Invalid request"]);
     exit;
-} catch (Exception $e) {
-    $pdo->rollBack();
-    die("Error create booking: " . $e->getMessage());
 }
+
+if (!isset($_SESSION["user_id"])) {
+    echo json_encode(["success" => false, "message" => "You must be logged in"]);
+    exit;
+}
+
+$data = json_decode(file_get_contents("php://input"), true);
+
+$name         = $data['name'] ?? null;
+$mail         = filter_var($data['mail'], FILTER_VALIDATE_EMAIL);
+$phone        = $data['phone'] ?? null;
+$room_type    = $data['room_type'] ?? null;
+$adult        = (int) ($data['adult'] ?? 0);
+$children     = (int) ($data['children'] ?? 0);
+$datein       = $data['datein'] ?? null;
+$dateout      = $data['dateout'] ?? null;
+$days_of_stay = (int) ($data['days_of_stay'] ?? 0);
+$message      = $data['message'] ?? "";
+$user_id      = $_SESSION["user_id"];
+
+//  room_type
+$room_types = ["Single Room" => 1, "Double Room" => 2, "Deluxe Room" => 3];
+$room_type_id = $room_types[$room_type] ?? 3;
+
+// Customer exists
+$stmt = $pdo->prepare("SELECT COUNT(*) FROM customers WHERE user_id = ?");
+$stmt->execute([$user_id]);
+$exists = $stmt->fetchColumn();
+
+if ($exists == 0) {
+    $cus_id = rand(100000, 99999999);
+    $stmt = $pdo->prepare("INSERT INTO customers (name, customer_id, user_id, mail, phone) VALUES (?, ?, ?, ?, ?)");
+    $stmt->execute([$name, $cus_id, $user_id, $mail, $phone]);
+}
+
+// Create booking
+$ref_no = rand(100000, 999999999);
+$sql = "INSERT INTO booking (name, ref_no, mail, phone, room_type, room_types_id, adult, children, datein, dateout, days_of_stay, status, message) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 3, ?)";
+$stmt = $pdo->prepare($sql);
+$stmt->execute([$name, $ref_no, $mail, $phone, $room_type, $room_type_id, $adult, $children, $datein, $dateout, $days_of_stay, $message]);
+
+echo json_encode(["success" => true, "message" => "Booking created successfully!"]);
+exit;

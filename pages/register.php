@@ -1,36 +1,3 @@
-<?php
-require __DIR__ . "/../DB/db_connect.php";
-
-$error_message = "";
-$success_message = "";
-
-if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    $name = $_POST["name"] ?? "";
-    $username = $_POST["username"] ?? "";
-    $password = $_POST["password"] ?? "";
-    $confirm_password = $_POST["confirm_password"] ?? "";
-
-    if (empty($name) || empty($username) || empty($password) || empty($confirm_password)) {
-        $error_message = "Please fill in all fields.";
-    } elseif ($password !== $confirm_password) {
-        $error_message = "Passwords do not match.";
-    } elseif (strlen($password) > 10) {
-        $error_message = "Password must be at most 10 characters.";
-    } else {
-        $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-
-        $stmt = $pdo->prepare("INSERT INTO users (id, name, username, password, type) VALUES (NULL, ?, ?, ?, 2)");
-
-        if ($stmt->execute([$name, $username, $hashed_password])) {
-            $success_message = "Registration successful! Redirecting to login...";
-            header("refresh:2;url=login.php");
-        } else {
-            $error_message = "Error registering user.";
-        }
-    }
-}
-?>
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -39,21 +6,16 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Register</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
 </head>
 
 <body class="d-flex align-items-center justify-content-center" style="height: 100vh; background-color: #121212;">
     <div class="container" style="max-width: 400px; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 10px rgba(227, 224, 224, 0.6);">
         <h2 class="text-center">Register</h2>
 
-        <?php if (!empty($error_message)): ?>
-            <div class="alert alert-danger"><?php echo htmlspecialchars($error_message); ?></div>
-        <?php endif; ?>
+        <div id="message" class="alert" style="display: none;"></div>
 
-        <?php if (!empty($success_message)): ?>
-            <div class="alert alert-success"><?php echo htmlspecialchars($success_message); ?></div>
-        <?php endif; ?>
-
-        <form method="POST" action="">
+        <form id="registerForm">
             <div class="mb-3">
                 <label for="name" class="form-label">Full Name</label>
                 <input type="text" class="form-control" id="name" name="name" required>
@@ -77,6 +39,32 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             <a href="login.php">Already have an account? Login here</a>
         </p>
     </div>
+
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = new FormData(this);
+
+            fetch('api/register.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const messageDiv = document.getElementById('message');
+                    messageDiv.style.display = 'block';
+                    messageDiv.className = data.success ? 'alert alert-success' : 'alert alert-danger';
+                    messageDiv.innerText = data.message;
+
+                    if (data.success) {
+                        setTimeout(() => {
+                            window.location.href = 'login.php';
+                        }, 2000);
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        });
+    </script>
 </body>
 
 </html>

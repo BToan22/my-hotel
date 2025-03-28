@@ -1,4 +1,22 @@
-<?php include '../includes/Head.php';
+<?php
+require __DIR__ . "/../DB/db_connect.php";
+session_start();
+if (!isset($_SESSION["user_id"])) {
+    echo "<script>alert('You must be logged in to make a reservation.');
+    window.location.href = 'login.php';</script>";
+    exit;
+} else {
+    $user_id = $_SESSION["user_id"];
+    $stmt = $pdo->prepare("SELECT name, mail, phone FROM customers WHERE user_id = ?");
+    $stmt->execute([$user_id]);
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    $name = $user['name'] ?? '';
+    $email = $user['mail'] ?? '';
+    $phone = $user['phone'] ?? '';
+}
+
+include '../includes/Head.php';
 include '../includes/Header.php'; ?>
 
 <div id="information" class="spacer reserve-info">
@@ -8,23 +26,18 @@ include '../includes/Header.php'; ?>
                 <div class="card shadow-lg border-0 rounded-3">
                     <div class="card-body p-4">
                         <h3 class="text-center fw-bold mb-4">Make a Reservation</h3>
-                        <form role="form" method="post" action="create_booking.php">
-                            <!-- Name & Email -->
+                        <form id="reservationForm">
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <input type="text" class="form-control" placeholder="Your Name" name="name" required>
+                                    <input type="text" class="form-control" placeholder="Your Name" name="name" value="<?= htmlspecialchars($name) ?>" required>
                                 </div>
                                 <div class="col-md-6 mb-3">
-                                    <input type="email" class="form-control" placeholder="Your Email" name="mail" required>
+                                    <input type="email" class="form-control" placeholder="Your Email" name="mail" value="<?= htmlspecialchars($email) ?>" required>
                                 </div>
                             </div>
-
-                            <!-- Phone -->
                             <div class="mb-3">
-                                <input type="tel" class="form-control" placeholder="Your Phone Number" name="phone" required>
+                                <input type="tel" class="form-control" placeholder="Your Phone Number" name="phone" value="<?= htmlspecialchars($phone) ?>" required>
                             </div>
-
-                            <!-- Room Type, Adults & Children -->
                             <div class="row">
                                 <div class="col-md-4 mb-3">
                                     <select class="form-select" name="room_type" required>
@@ -53,8 +66,6 @@ include '../includes/Header.php'; ?>
                                     </select>
                                 </div>
                             </div>
-
-                            <!-- Check-in & Check-out Date -->
                             <div class="row">
                                 <div class="col-md-4 mb-3">
                                     <label class="form-label">Check-in Date</label>
@@ -66,18 +77,14 @@ include '../includes/Header.php'; ?>
                                 </div>
                                 <div class="col-md-4 mb-3">
                                     <label class="form-label">Days of Stay</label>
-                                    <input type="number" class="form-control" name="days_of_stay" min="1" required>
+                                    <input type="number" class="form-control" name="days_of_stay" min="1" required disabled>
                                 </div>
                             </div>
-
-                            <!-- Message -->
                             <div class="mb-3">
                                 <textarea class="form-control" placeholder="Additional Message" rows="4" name="message"></textarea>
                             </div>
-
-                            <!-- Submit Button -->
                             <div class="text-center">
-                                <button class="btn btn-dark w-100 py-2 fw-bold">Submit Reservation</button>
+                                <button type="submit" class="btn btn-dark w-100 py-2 fw-bold">Submit Reservation</button>
                             </div>
                         </form>
                     </div>
@@ -87,4 +94,60 @@ include '../includes/Header.php'; ?>
     </div>
 </div>
 
-<?php include '../includes/Footer.php'; ?>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const checkInInput = document.querySelector('input[name="datein"]');
+        const checkOutInput = document.querySelector('input[name="dateout"]');
+        const daysOfStayInput = document.querySelector('input[name="days_of_stay"]');
+
+        function calculateDaysOfStay() {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const checkInDate = new Date(checkInInput.value);
+            const checkOutDate = new Date(checkOutInput.value);
+
+            if (checkInDate < today) {
+                alert("Check-in date must be today or later!");
+                checkInInput.value = "";
+                daysOfStayInput.value = "";
+                return;
+            }
+            if (checkOutDate <= checkInDate) {
+                alert("Check-out date must be after check-in date!");
+                checkOutInput.value = "";
+                daysOfStayInput.value = "";
+                return;
+            }
+
+            const timeDiff = checkOutDate - checkInDate;
+            const daysOfStay = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+            daysOfStayInput.value = daysOfStay;
+        }
+
+        checkInInput.addEventListener("change", calculateDaysOfStay);
+        checkOutInput.addEventListener("change", calculateDaysOfStay);
+
+        document.getElementById("reservationForm").addEventListener("submit", async function(event) {
+            event.preventDefault();
+            let formData = new FormData(this);
+            let jsonData = {};
+            formData.forEach((value, key) => jsonData[key] = value);
+
+            let response = await fetch("create_booking.php", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(jsonData)
+            });
+
+            let result = await response.json();
+            if (result.success) {
+                alert("Booking successful!");
+                window.location.href = "book.php";
+            } else {
+                alert("Error: " + result.message);
+            }
+        });
+    });
+</script>
