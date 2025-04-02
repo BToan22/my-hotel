@@ -43,18 +43,26 @@
     <script>
         document.getElementById('registerForm').addEventListener('submit', function(event) {
             event.preventDefault();
-            const formData = new FormData(this);
 
-            fetch('api/register.php', {
+            const data = {
+                name: document.getElementById('name').value,
+                username: document.getElementById('username').value,
+                password: document.getElementById('password').value,
+                confirm_password: document.getElementById('confirm_password').value
+            };
+            fetch('handle_register.php', {
                     method: 'POST',
-                    body: formData
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
                 })
                 .then(response => response.json())
                 .then(data => {
                     const messageDiv = document.getElementById('message');
                     messageDiv.style.display = 'block';
                     messageDiv.className = data.success ? 'alert alert-success' : 'alert alert-danger';
-                    messageDiv.innerText = data.message;
+                    messageDiv.innerText = data.success;
 
                     if (data.success) {
                         setTimeout(() => {
@@ -65,6 +73,7 @@
                 .catch(error => console.error('Error:', error));
         });
     </script>
+
 </body>
 
 </html>

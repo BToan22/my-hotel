@@ -7,6 +7,7 @@ verifyAdmin();
 
 // Read JSON data from the request body
 $data = json_decode(file_get_contents("php://input"), true);
+
 $room_id = $data['room_id'] ?? null;
 $ref_no = $data['ref_no'] ?? null;
 
@@ -33,12 +34,13 @@ try {
     SELECT id
     FROM booking
     WHERE ref_no = :ref_no
-        AND assigned_room_id = 0
-        AND status = 0
-        AND room_type_id = :room_type_id
-        AND DATE(check_in_date) = CURDATE()
+     AND assigned_room_id = 0
+     AND status = 0
+     AND room_type_id = :room_type_id
+     AND DATE(datein) = CURDATE()
     LIMIT 1
 ");
+
     $stmt->execute([
         'ref_no' => $ref_no,
         'room_type_id' => $room['category_id']

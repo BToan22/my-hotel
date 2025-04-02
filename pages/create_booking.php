@@ -44,10 +44,10 @@ if ($exists == 0) {
 
 // Create booking
 $ref_no = rand(100000, 999999999);
-$sql = "INSERT INTO booking (name, ref_no, mail, phone, room_type, room_types_id, adult, children, datein, dateout, days_of_stay, status, message) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 3, ?)";
+$sql = "INSERT INTO booking (name, ref_no, mail, phone, room_type, room_type_id, adult, children, datein, dateout, days_of_stay, status, message,user_id) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 3, ?,?)";
 $stmt = $pdo->prepare($sql);
-$stmt->execute([$name, $ref_no, $mail, $phone, $room_type, $room_type_id, $adult, $children, $datein, $dateout, $days_of_stay, $message]);
+$stmt->execute([$name, $ref_no, $mail, $phone, $room_type, $room_type_id, $adult, $children, $datein, $dateout, $days_of_stay, $message,$user_id ]);
 
 echo json_encode(["success" => true, "message" => "Booking created successfully!"]);
 exit;

@@ -137,6 +137,7 @@ try {
                 })
                 .then(response => response.json())
                 .then(data => {
+                    console.log(data);
                     if (data.success) {
                         alert("Check-in successful!");
                         location.reload();

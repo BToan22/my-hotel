@@ -12,6 +12,8 @@ foreach ($categories as $cat) {
 // Room booked
 $bookings_query = $pdo->query("SELECT * FROM booking  ORDER BY status ASC, id ASC");
 $bookings = $bookings_query->fetchAll(PDO::FETCH_ASSOC);
+// var_dump($bookings);
+// die();
 ?>
 <div class="container my-4">
     <h2 class="mb-4">Booked Rooms</h2>
@@ -34,7 +36,8 @@ $bookings = $bookings_query->fetchAll(PDO::FETCH_ASSOC);
                         <tr>
                             <td><?= $i++ ?></td>
                             <td><?= htmlspecialchars($row['ref_no']) ?></td>
-                            <td><?= htmlspecialchars($cat_arr[$row['assigned_room_id']] ?? 'Unknown') ?></td>
+                            <td><?= htmlspecialchars($row['room_type']) ?></td>
+                            <!-- <td><?= htmlspecialchars($cat_arr[$row['room_type']] ?? 'Unknown') ?></td> -->
                             <td><?= htmlspecialchars($row['name']) ?></td>
                             <td>
                                 <?php if ($row['status'] == 0): ?>

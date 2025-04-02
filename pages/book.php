@@ -131,8 +131,9 @@ include '../includes/Header.php'; ?>
             event.preventDefault();
             let formData = new FormData(this);
             let jsonData = {};
+         
             formData.forEach((value, key) => jsonData[key] = value);
-
+            
             let response = await fetch("create_booking.php", {
                 method: "POST",
                 headers: {

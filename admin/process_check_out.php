@@ -73,26 +73,56 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 exit;
             }
 
-            $stmt = $pdo->prepare("
-                UPDATE booking 
-                SET 
-                    status = 2,  -- checked-out
-                    dateout = CURDATE(),
-                    days_of_stay = :days_of_stay,
-                    price = :total_price
-                WHERE id = :id
-            ");
-            $stmt->bindParam(':id', $id, PDO::PARAM_INT);
-            $stmt->bindParam(':days_of_stay', $days_of_stay, PDO::PARAM_INT);
-            $stmt->bindParam(':total_price', $total_price, PDO::PARAM_STR);
-            $stmt->execute();
+            try {
+                $pdo->beginTransaction(); // Bắt đầu transaction
 
-            echo json_encode(["success" => true, "message" => "Check-out successful"]);
+                // Cập nhật trạng thái của booking
+                $stmt = $pdo->prepare("
+                    UPDATE booking 
+                    SET 
+                        status = 2,  -- checked-out
+                        dateout = CURDATE(),
+                        days_of_stay = :days_of_stay,
+                        price = :total_price
+                    WHERE id = :id
+                ");
+                $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+                $stmt->bindParam(':days_of_stay', $days_of_stay, PDO::PARAM_INT);
+                $stmt->bindParam(':total_price', $total_price, PDO::PARAM_STR);
+                $stmt->execute();
+
+                // Lấy assigned_room_id từ booking
+                $stmt = $pdo->prepare("SELECT assigned_room_id FROM booking WHERE id = :id");
+                $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+                $stmt->execute();
+                $room = $stmt->fetch(PDO::FETCH_ASSOC);
+
+                if (!$room) {
+                    throw new Exception("Room not found for booking ID $id");
+                }
+
+                $assigned_room_id = $room['assigned_room_id'];
+
+                $stmt = $pdo->prepare("
+                    UPDATE rooms 
+                    SET status = 0  -- Room is now available
+                    WHERE id = :assigned_room_id
+                ");
+                $stmt->bindParam(':assigned_room_id', $assigned_room_id, PDO::PARAM_INT);
+                $stmt->execute();
+
+                $pdo->commit();
+
+                echo json_encode(["success" => true, "message" => "Check-out successful and room status updated"]);
+            } catch (Exception $e) {
+                $pdo->rollBack();
+                echo json_encode(["success" => false, "message" => "Error: " . $e->getMessage()]);
+            }
         }
     } catch (PDOException $e) {
         echo json_encode(["success" => false, "message" => $e->getMessage()]);
     }
-}else if ($_SERVER["REQUEST_METHOD"] === "GET") {
+} else if ($_SERVER["REQUEST_METHOD"] === "GET") {
     $id = $_GET['id'] ?? null;
 
     if (!$id) {
@@ -129,4 +159,3 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         echo json_encode(["success" => false, "message" => $e->getMessage()]);
     }
 }
-?>
