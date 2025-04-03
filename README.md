@@ -11,3 +11,5 @@
   <li>Run the project: Open the link</li>
   <ul>
     <li>Homepage: <code>localhost/Hotel/index.php</code></li>
+
+  <li>Update project</li>
