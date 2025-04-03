@@ -13,3 +13,4 @@
     <li>Homepage: <code>localhost/Hotel/index.php</code></li>
 
   <li>Update project</li>
+  <li>Implement room booking functionality</li>
