@@ -28,6 +28,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         }
 
         if ($user && password_verify($password, $user["password"])) {
+            var_dump($user);
             $payload = [
                 "iat" => time(),
                 "nbf" => time(),
@@ -38,6 +39,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     "user_type" => $user["type"]
                 ]
             ];
+           
 
             $token = JWT::encode($payload, $secret_key, 'HS256');
             setcookie("token", $token, time() + 3600, "/", "", false, true);
